@@ -37,9 +37,6 @@ var mmq          = require('gulp-merge-media-queries'); // Combine matching medi
 var concat       = require('gulp-concat'); // Concatenates JS files
 var uglify       = require('gulp-uglify'); // Minifies JS files
 
-// Image realted plugins.
-var imagemin     = require('gulp-imagemin'); // Minify PNG, JPEG, GIF and SVG images with imagemin.
-
 // Utility related plugins.
 var rename       = require('gulp-rename'); // Renames files E.g. style.css -> style.min.css
 var lineec       = require('gulp-line-ending-corrector'); // Consistent Line Endings for non UNIX systems. Gulp Plugin for Line Ending Corrector (A utility that makes sure your files have consistent line endings)
@@ -48,7 +45,6 @@ var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file
 var notify       = require('gulp-notify'); // Sends message notification to you
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
 var reload       = browserSync.reload; // For manual browser reload.
-var wpPot        = require('gulp-wp-pot'); // For generating the .pot file.
 var sort         = require('gulp-sort'); // Recommended to prevent unnecessary changes in pot-file.
 
 var JSONC        = require('json-comments');

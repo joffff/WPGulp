@@ -20,17 +20,50 @@
  */
 
 /**
- * Configuration.
- *
  * Project Configuration for gulp tasks.
  *
- * In paths you can add <<glob or array of globs>>. Edit the variables as per your project requirements.
+ * Edit values in gulp-config.json
+ *
+ * In paths you can add <<glob or array of globs>>. 
+ * 
  */
+
+// Project related.
+var project                 = 'WPGulpTheme'; // Project Name.
+var projectURL              = 'wpgulp.dev'; // Local project URL of your already running WordPress site. Could be something like local.dev or localhost:8888.
+var productURL              = './'; // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder.
+
+// Style related.
+var styleSRC                = './assets/css/style.scss'; // Path to main .scss file.
+var styleDestination        = './'; // Path to place the compiled CSS file.
+// Default set to root folder.
+
+// JS Vendor related.
+var jsVendorSRC             = './assets/js/vendor.js'; // Path to JS vendor folder.
+var jsVendorDestination     = './assets/js/'; // Path to place the compiled JS vendors file.
+var jsVendorFile            = 'vendors'; // Compiled JS vendors file name.
+// Default set to vendors i.e. vendors.js.
+
+// JS Custom related.
+var jsCustomSRC             = './assets/js/custom/*.js'; // Path to JS custom scripts folder.
+var jsCustomDestination     = './assets/js/'; // Path to place the compiled JS custom scripts file.
+var jsCustomFile            = 'custom'; // Compiled JS custom file name.
+// Default set to custom i.e. custom.js.
+
+// Images related.
+var imagesSRC               = './assets/img/raw/**.{png,jpg,gif,svg}'; // Source folder of images which should be optimized.
+var imagesDestination       = './assets/img/'; // Destination folder of optimized images. Must be different from the imagesSRC folder.
+
+// Watch files paths.
+var styleWatchFiles         = './assets/css/**/*.scss'; // Path to all *.scss files inside css folder and inside them.
+var vendorJSWatchFiles      = './assets/js/vendor/*.js'; // Path to all vendor JS files.
+var customJSWatchFiles      = './assets/js/custom/*.js'; // Path to all custom JS files.
+var projectPHPWatchFiles    = './**/*.php'; // Path to all PHP files.
 
 
 
 // Browsers you care about for autoprefixing.
-// Browserlist https        ://github.com/ai/browserslist
+// Browserlist https://github.com/ai/browserslist
 const AUTOPREFIXER_BROWSERS = [
 	'last 2 version',
 	'> 1%',
@@ -47,55 +80,7 @@ const AUTOPREFIXER_BROWSERS = [
 
 // STOP Editing Project Variables.
 
-var config = [];
-try {
-	config = require('./gulp-config.json');
-} catch (exp) {
-	console.log( exp );
-	throw new Error("Please create the config file 'gulp-config.json'.");
-}
 
-
-// Project related.
-var project                 = 'WPGulpTheme'; // Project Name.
-var projectURL              = 'wpgulp.dev'; // Local project URL of your already running WordPress site. Could be something like local.dev or localhost:8888.
-var productURL              = './'; // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder.
-
-// Translation related.
-var text_domain             = 'WPGULP'; // Your textdomain here.
-var translationFile         = 'WPGULP.pot'; // Name of the transalation file.
-var translationDestination  = './languages'; // Where to save the translation files.
-var packageName             = 'WPGULP'; // Package name.
-var bugReport               = 'https://AhmadAwais.com/contact/'; // Where can users report bugs.
-var lastTranslator          = 'Ahmad Awais <your_email@email.com>'; // Last translator Email ID.
-var team                    = 'WPTie <your_email@email.com>'; // Team's Email ID.
-
-// Style related.
-var styleSRC                = './assets/css/style.scss'; // Path to main .scss file.
-var styleDestination        = './'; // Path to place the compiled CSS file.
-// Default set to root folder.
-
-// JS Vendor related.
-var jsVendorSRC             = './assets/js/vendor/*.js'; // Path to JS vendor folder.
-var jsVendorDestination     = './assets/js/'; // Path to place the compiled JS vendors file.
-var jsVendorFile            = 'vendors'; // Compiled JS vendors file name.
-// Default set to vendors i.e. vendors.js.
-
-// JS Custom related.
-var jsCustomSRC             = './assets/js/custom/*.js'; // Path to JS custom scripts folder.
-var jsCustomDestination     = './assets/js/'; // Path to place the compiled JS custom scripts file.
-var jsCustomFile            = 'custom'; // Compiled JS custom file name.
-// Default set to custom i.e. custom.js.
-
-// Images related.
-var imagesSRC               = './assets/img/raw/**/*.{png,jpg,gif,svg}'; // Source folder of images which should be optimized.
-var imagesDestination       = './assets/img/'; // Destination folder of optimized images. Must be different from the imagesSRC folder.
-
-// Watch files paths.
-var styleWatchFiles         = './assets/css/**/*.scss'; // Path to all *.scss files inside css folder and inside them.
-var vendorJSWatchFiles      = './assets/js/vendor/*.js'; // Path to all vendor JS files.
-var customJSWatchFiles      = './assets/js/custom/*.js'; // Path to all custom JS files.
-var projectPHPWatchFiles    = './**/*.php'; // Path to all PHP files.
 
 
 /**
@@ -128,6 +113,29 @@ var browserSync  = require('browser-sync').create(); // Reloads browser and inje
 var reload       = browserSync.reload; // For manual browser reload.
 var wpPot        = require('gulp-wp-pot'); // For generating the .pot file.
 var sort         = require('gulp-sort'); // Recommended to prevent unnecessary changes in pot-file.
+
+var JSONC        = require('json-comments');
+var fs           = require('fs');
+
+
+var configFile = './gulp-config.json';
+var configContent;
+var config = [];
+
+// Test if config file exists.
+try {
+	// read in gulp config file.
+	configContent = fs.readFileSync( configFile, 'utf8' );
+	
+	// parse JSON String.
+	var config = JSONC.parse( configContent ); 
+
+} catch (exp) {
+
+	// Error if no config file is found.
+	throw new Error("Please create the config file 'gulp-config.json'.");
+}
+
 
 /**
  * Task: `browser-sync`.

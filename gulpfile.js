@@ -41,12 +41,13 @@ var uglify       = require('gulp-uglify'); // Minifies JS files
 var rename       = require('gulp-rename'); // Renames files E.g. style.css -> style.min.css
 var lineec       = require('gulp-line-ending-corrector'); // Consistent Line Endings for non UNIX systems. Gulp Plugin for Line Ending Corrector (A utility that makes sure your files have consistent line endings)
 var filter       = require('gulp-filter'); // Enables you to work on a subset of the original files by filtering them using globbing.
+var bulkSass     = require('gulp-sass-bulk-import'); //https://www.npmjs.com/package/gulp-sass-bulk-import
 var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css)
 var notify       = require('gulp-notify'); // Sends message notification to you
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
 var reload       = browserSync.reload; // For manual browser reload.
 var sort         = require('gulp-sort'); // Recommended to prevent unnecessary changes in pot-file.
-
+var watch        = require('gulp-watch');
 var JSONC        = require('json-comments');
 var fs           = require('fs');
 
@@ -139,6 +140,7 @@ gulp.task( 'browser-sync', function() {
  */
  gulp.task('styles', function () {
 	gulp.src( config.styles_src )
+	.pipe(bulkSass())
 	.pipe( sourcemaps.init() )
 	.pipe( sass( {
 	  errLogToConsole: true,
@@ -236,8 +238,11 @@ gulp.task( 'customJS', function() {
   */
 // gulp.task( 'default', ['styles', 'vendorsJs', 'customJS', 'images', 'browser-sync'], function () {
 
- gulp.task( 'default', ['styles'], function () {
-  gulp.watch( config.watch_styles, [ 'styles' ] ); // Reload on SCSS file changes.
-  // gulp.watch( config.watch_js_vendor, [ 'vendorsJs', reload ] ); // Reload on vendorsJs file changes.
-  // gulp.watch( config.watch_js_custom, [ 'customJS', reload ] ); // Reload on customJS file changes.
- });
+gulp.task( 'default', ['styles'], function () {
+	watch( config.watch_styles, function() {
+		gulp.start('styles'); // Reload on SCSS file changes.
+	});
+	// gulp.watch( config.watch_styles, [ 'styles', reload ] ); // Reload on vendorsJs file changes.	
+	// gulp.watch( config.watch_js_vendor, [ 'vendorsJs', reload ] ); // Reload on vendorsJs file changes.
+	// gulp.watch( config.watch_js_custom, [ 'customJS', reload ] ); // Reload on customJS file changes.
+});

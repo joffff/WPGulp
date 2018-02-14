@@ -7,7 +7,7 @@
     
     // Style settings
     "styles_src" : "./assets/scss/style.scss",  // Path to main .scss file
-    "styles_dest" : "./", // Path to place the compiled CSS file.
+    "styles_dest" : "./assets/css/", // Path to place the compiled CSS file.
     "styles_browsers" : [ // Array of browsers for autoprefixer. See https://github.com/ai/browserslist
 		"last 2 version",
 		"> 1%",
@@ -32,8 +32,8 @@
     "scripts_dest": "./assets/js/",
     "scripts_combined_name" : "main", // Default set to main i.e. main.js.
 
-
-    "watch_styles": "./assets/css/**/*.scss",
+    // Watch paths
+    "watch_styles": "./assets/scss/**/*.scss",
     "watch_js_vendor": "./assets/js/vendor/*.js",
     "watch_js_custom": "./assets/js/custom/*.js",
 

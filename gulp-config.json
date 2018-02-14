@@ -21,12 +21,13 @@
 		"android >= 4",
 		"bb >= 10"
   	],
+    "styles_minify" : "compressed", // Minify output mode, Options: compact, compressed, nested, expanded
 
     // Script Vendor settings
-    "scripts_vendor_src": "./assets/js/vendor.js", // Path to JS vendor scripts folder.
+    "scripts_vendor_src": "./assets/js/vendor/*.js", // Path to JS vendor scripts folder.
 
     // Script Custom settings
-    "scripts_custom_src": "./assets/js/custom/*.js", // Path to JS custom scripts folder.
+    "scripts_custom_src": "./assets/js/modules/*.js", // Path to JS custom scripts folder.
 
     // Other script settings
     "scripts_dest": "./assets/js/",
@@ -35,7 +36,7 @@
     // Watch paths
     "watch_styles": "./assets/scss/**/*.scss",
     "watch_js_vendor": "./assets/js/vendor/*.js",
-    "watch_js_custom": "./assets/js/custom/*.js",
+    "watch_js_custom": "./assets/js/modules/*.js",
 
     "use_linting" : true, // Set to use linting: true / false.
     "use_browsersync" : true, // Set to start a proxy server: true / false

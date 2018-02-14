@@ -1,22 +1,19 @@
 /**
  * Gulpfile.
  *
- * Gulp with WordPress.
+ * Edit values in gulp-config.json
+ *
+ * Forked from Gulp with WordPress: https://github.com/ahmadawais/WPGulp
  *
  * Implements:
  *      1. Live reloads browser with BrowserSync.
  *      2. CSS: Sass to CSS conversion, error catching, Autoprefixing, Sourcemaps,
  *         CSS minification, and Merge Media Queries.
  *      3. JS: Concatenates & uglifies Vendor and Custom JS files.
- *      4. Images: Minifies PNG, JPEG, GIF and SVG images.
  *      5. Watches files for changes in CSS or JS.
- *      6. Watches files for changes in PHP.
  *      7. Corrects the line endings.
  *      8. InjectCSS instead of browser page reload.
- *      9. Generates .pot file for i18n and l10n.
  *
- * @author Ahmad Awais (@ahmadawais)
- * @version 1.0.3
  */
 
 
@@ -43,6 +40,7 @@ var lineec       = require('gulp-line-ending-corrector'); // Consistent Line End
 var filter       = require('gulp-filter'); // Enables you to work on a subset of the original files by filtering them using globbing.
 var bulkSass     = require('gulp-sass-bulk-import'); //https://www.npmjs.com/package/gulp-sass-bulk-import
 var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css)
+var streamqueue  = require('streamqueue'); //https://github.com/contra/gulp-concat
 var notify       = require('gulp-notify'); // Sends message notification to you
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
 var reload       = browserSync.reload; // For manual browser reload.
@@ -69,24 +67,6 @@ try {
 	// Error if no config file is found.
 	throw new Error("Please create the config file 'gulp-config.json'.");
 }
-
-
-
-/**
- * Project Configuration for gulp tasks.
- *
- * Edit values in gulp-config.json
- *
- */
-
-// Project related.
-var projectType             = config.project_type; // Defines the type of project, e.g. theme or plugin
-
-var jsDestination           = config.scripts_dest; // Path to place the compiled JS custom scripts file.
-var jsFilename              = config.scripts_combined_name; // Compiled JS custom file name.
-
-// Browsers you care about for autoprefixing.
-const AUTOPREFIXER_BROWSERS = config.styles_browsers;
 
 
 /**
@@ -138,13 +118,13 @@ gulp.task( 'browser-sync', function() {
  *    6. Minifies the CSS file and generates style.min.css
  *    7. Injects CSS or reloads the browser via browserSync
  */
- gulp.task('styles', function () {
+gulp.task('styles', function () {
 	gulp.src( config.styles_src )
 	.pipe(bulkSass())
 	.pipe( sourcemaps.init() )
 	.pipe( sass( {
 	  errLogToConsole: true,
-	  outputStyle: 'compact',
+	  outputStyle: config.styles_minify,
 	  // outputStyle: 'compressed',
 	  // outputStyle: 'nested',
 	  // outputStyle: 'expanded',
@@ -153,7 +133,7 @@ gulp.task( 'browser-sync', function() {
 	.on('error', console.error.bind(console))
 	.pipe( sourcemaps.write( { includeContent: false } ) )
 	.pipe( sourcemaps.init( { loadMaps: true } ) )
-	.pipe( autoprefixer( AUTOPREFIXER_BROWSERS ) )
+	.pipe( autoprefixer( config.styles_browsers ) )
 
 	.pipe( sourcemaps.write ( './' ) )
 	.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
@@ -178,29 +158,34 @@ gulp.task( 'browser-sync', function() {
 
 
 /**
-* Task: `vendorJS`.
+* Task: `combinedJS`.
 *
-* Concatenate and uglify vendor JS scripts.
+* Concatenate and uglify all JS scripts.
 *
 * This task does the following:
-*     1. Gets the source folder for JS vendor files
-*     2. Concatenates all the files and generates vendors.js
+*     1. Gets the source folder for JS vendor and custom files
+*     2. Concatenates all the files and generates a single .js file
 *     3. Renames the JS file with suffix .min.js
-*     4. Uglifes/Minifies the JS file and generates vendors.min.js
+*     4. Uglifes/Minifies the JS file and generates a .min.js file
 */
-gulp.task( 'vendorsJs', function() {
-	gulp.src( config.scripts_vendor_src )
-		.pipe( concat( jsVendorFile + '.js' ) )
-		.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
-		.pipe( gulp.dest( jsVendorDestination ) )
-		.pipe( rename( {
-			basename: jsVendorFile,
-			suffix: '.min'
-		}))
-		.pipe( uglify() )
-		.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
-		.pipe( gulp.dest( jsVendorDestination ) )
-		.pipe( notify( { message: 'TASK: "vendorsJs" Completed! 💯', onLast: true } ) );
+gulp.task( 'combinedJS', function() {
+	return streamqueue({ objectMode: true },
+
+		gulp.src( config.scripts_vendor_src ),
+		gulp.src( config.scripts_custom_src )		
+	)
+
+	.pipe( concat( config.scripts_combined_name + '.js' ) )
+	.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
+	.pipe( gulp.dest( config.scripts_dest ) )
+	.pipe( rename( {
+		basename: config.scripts_combined_name,
+		suffix: '.min'
+	}))
+	.pipe( uglify() )
+	.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
+	.pipe( gulp.dest( config.scripts_dest ) )
+	.pipe( notify( { message: 'TASK: "combinedJS" Completed! 💯', onLast: true } ) );
 });
 
 
@@ -238,11 +223,11 @@ gulp.task( 'customJS', function() {
   */
 // gulp.task( 'default', ['styles', 'vendorsJs', 'customJS', 'images', 'browser-sync'], function () {
 
-gulp.task( 'default', ['styles'], function () {
+gulp.task( 'default', ['styles', 'combinedJS', 'browser-sync'], function () {
 	watch( config.watch_styles, function() {
 		gulp.start('styles'); // Reload on SCSS file changes.
 	});
-	// gulp.watch( config.watch_styles, [ 'styles', reload ] ); // Reload on vendorsJs file changes.	
-	// gulp.watch( config.watch_js_vendor, [ 'vendorsJs', reload ] ); // Reload on vendorsJs file changes.
-	// gulp.watch( config.watch_js_custom, [ 'customJS', reload ] ); // Reload on customJS file changes.
+
+	gulp.watch( config.watch_js_vendor, [ 'combinedJS', reload ] ); // Reload on vendorsJs file changes.
+	gulp.watch( config.watch_js_custom, [ 'combinedJS', reload ] ); // Reload on customJS file changes.
 });

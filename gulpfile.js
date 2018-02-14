@@ -32,7 +32,9 @@ var mmq          = require('gulp-merge-media-queries'); // Combine matching medi
 
 // JS related plugins.
 var concat       = require('gulp-concat'); // Concatenates JS files
-var uglify       = require('gulp-uglify'); // Minifies JS files
+var jshint       = require('gulp-jshint'); // Adds linting for JS
+var minifyjs     = require('gulp-minify'); //https://www.npmjs.com/package/gulp-minify
+
 
 // Utility related plugins.
 var rename       = require('gulp-rename'); // Renames files E.g. style.css -> style.min.css
@@ -94,7 +96,7 @@ gulp.task( 'browser-sync', function() {
 	open: config.use_browsersync,
 
 	// Inject CSS changes.
-	// Commnet it to reload browser for every CSS change.
+	// Comment it to reload browser for every CSS change.
 	injectChanges: config.use_injectcss,
 
 	// Use a specific port (instead of the one auto-detected by Browsersync).
@@ -160,7 +162,7 @@ gulp.task('styles', function () {
 /**
 * Task: `combinedJS`.
 *
-* Concatenate and uglify all JS scripts.
+* Concatenate and minify all JS scripts.
 *
 * This task does the following:
 *     1. Gets the source folder for JS vendor and custom files
@@ -168,28 +170,42 @@ gulp.task('styles', function () {
 *     3. Renames the JS file with suffix .min.js
 *     4. Uglifes/Minifies the JS file and generates a .min.js file
 */
-gulp.task( 'combinedJS', function() {
+gulp.task( 'combinedJS', ['jshint'], function () {
+
 	return streamqueue({ objectMode: true },
 
 		gulp.src( config.scripts_vendor_src ),
 		gulp.src( config.scripts_custom_src )		
 	)
-
-	.pipe( concat( config.scripts_combined_name + '.js' ) )
-	.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
-	.pipe( gulp.dest( config.scripts_dest ) )
-	.pipe( rename( {
-		basename: config.scripts_combined_name,
-		suffix: '.min'
-	}))
-	.pipe( uglify() )
-	.pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
-	.pipe( gulp.dest( config.scripts_dest ) )
-	.pipe( notify( { message: 'TASK: "combinedJS" Completed! 💯', onLast: true } ) );
+    .pipe(concat( config.scripts_combined_name + '.js' ))
+    .pipe(minifyjs({
+    	ext: {
+    		min:'.min.js'
+    	}
+    }))
+    .pipe(gulp.dest( config.scripts_dest ))
 });
 
 
+/**
+* Task: `jshint`.
+*
+* Dependency task run before the JS is compiled and minified to a single file
+*/
+gulp.task('jshint', function () {
 
+    if( config.use_linting ) {
+
+        return streamqueue({objectMode: true},
+            gulp.src( config.scripts_vendor_src ),
+			gulp.src( config.scripts_custom_src )		
+        )
+	        .pipe(jshint())
+	        .pipe(jshint.reporter( 'jshint-stylish' ))
+	        .pipe(jshint.reporter( 'fail' ))
+    }
+
+});
 
  /**
   * Watch Tasks.
@@ -204,5 +220,8 @@ gulp.task( 'default', ['styles', 'combinedJS', 'browser-sync'], function () {
 	});
 
 	gulp.watch( config.watch_js_vendor, [ 'combinedJS', reload ] ); // Reload on vendorsJs file changes.
-	gulp.watch( config.watch_js_custom, [ 'combinedJS', reload ] ); // Reload on customJS file changes.
+	
+	watch( config.watch_js_custom, function() {
+		gulp.start('combinedJS');
+	});		
 });

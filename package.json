@@ -1,11 +1,11 @@
 {
-	"name": "WPGulp",
-	"author": "ahmadawais",
-	"version": "1.0.4",
+	"name": "HDGulp",
+	"author": "Highrise Digital",
+	"version": "1.0.1",
 	"license": "GPL-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ahmadawais/WPGulp"
+		"url": "https://github.com/highrisedigital/hdGulp"
 	},
 	"dependencies": {},
 	"devDependencies": {

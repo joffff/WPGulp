@@ -50,6 +50,7 @@ var sort         = require('gulp-sort'); // Recommended to prevent unnecessary c
 var watch        = require('gulp-watch'); // Using gulp-watch as an alternative for the default gulp watcher - gulp-watch detects new files.
 var JSONC        = require('json-comments'); // Parse JSON and strip out comments.  Allows non-standard JSON to be used for gulp-config.json.
 var fs           = require('fs'); // Uses Node filesystem package.
+var gulpif       = require('gulp-if'); // Adds conditional logic to control flow.
 
 
 /**
@@ -154,7 +155,6 @@ gulp.task('styles', function () {
 	.pipe( sourcemaps.init() )
 	.pipe( sass( { // 
 		errLogToConsole: true,
-		outputStyle: config.styles_minify, // Minify output mode
 		precision: 10 // Used to determine how many digits after the decimal will be allowed. 
 	} ) )
 	.on('error', console.error.bind(console))
@@ -166,10 +166,9 @@ gulp.task('styles', function () {
 	.pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
 	.pipe( mmq( { log: true } ) ) // Merge Media Queries only for .min.css version.
 	.pipe( browserSync.stream() ) // Reloads style.css if that is enqueued.
-	.pipe( rename( { suffix: '.min' } ) )
-	.pipe( minifycss( {
-	  maxLineLen: 10 // Adds a newline every x characters.
-	}))
+	.pipe( gulpif( config.styles_minify, minifycss( { // If config set to true, minify CSS.
+	  maxLineLen: 0 // Adds a newline every x characters.
+	})))
 	.pipe( gulp.dest( config.styles_dest ) )
 	.pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
 	.pipe( browserSync.stream() ) // Reloads style.min.css if that is enqueued.

@@ -18,7 +18,7 @@
 
 	// Other script settings
 	"scripts_dest": "./assets/js/",
-	"scripts_combined_name" : "main", // Default set to main i.e. main.js.
+	"scripts_combined_name" : "footer-scripts", // Default set to "footer-scripts" i.e. footer-scripts.js.
 
 	// Watch paths
 	"watch_styles": "./assets/scss/**/*.scss",

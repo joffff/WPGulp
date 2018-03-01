@@ -1,7 +1,7 @@
 {
 	"name": "HDGulp",
 	"author": "Highrise Digital",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"license": "GPL-2.0",
 	"repository": {
 		"type": "git",
@@ -18,10 +18,8 @@
 		"gulp-if": "^2.0.2",
 		"gulp-ignore-errors": "^0.0.4",
 		"gulp-jshint": "^2.1.0",
-		"gulp-merge-media-queries": "^0.2.1",
 		"gulp-minify": "^2.1.0",
 		"gulp-notify": "^2.2.0",
-		"gulp-rename": "^1.2.0",
 		"gulp-sass": "^3.1.0",
 		"gulp-sort": "^2.0.0",
 		"gulp-sourcemaps": "^1.5.2",

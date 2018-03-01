@@ -30,7 +30,6 @@ var gulp         = require('gulp'); // Gulp of-course
 var sass         = require('gulp-sass'); // Gulp pluign for Sass compilation.
 var minifycss    = require('gulp-uglifycss'); // Minifies CSS files.
 var autoprefixer = require('gulp-autoprefixer'); // Autoprefixing magic.
-var mmq          = require('gulp-merge-media-queries'); // Combine matching media queries into one media query definition.
 
 // JS related plugins.
 var concat       = require('gulp-concat'); // Concatenates JS files
@@ -38,7 +37,6 @@ var jshint       = require('gulp-jshint'); // Adds linting for JS
 var minifyjs     = require('gulp-minify'); //https://www.npmjs.com/package/gulp-minify
 
 // Utility related plugins.
-var rename       = require('gulp-rename'); // Renames files E.g. style.css -> style.min.css
 var filter       = require('gulp-filter'); // Enables you to work on a subset of the original files by filtering them using globbing.
 var bulkSass     = require('gulp-sass-bulk-import'); //https://www.npmjs.com/package/gulp-sass-bulk-import
 var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css)
@@ -145,33 +143,36 @@ gulp.task( 'browser-sync-open', function() {
  *    2. Compiles Sass to CSS
  *    3. Writes Sourcemaps for it
  *    4. Autoprefixes it and generates style.css
- *    5. Renames the CSS file with suffix .min.css
- *    6. Minifies the CSS file and generates style.min.css
- *    7. Injects CSS or reloads the browser via browserSync
+ *    5. Injects CSS or reloads the browser via browserSync
  */
 gulp.task('styles', function () {
 	gulp.src( config.styles_src )
 	.pipe( bulkSass() ) // Import directories within .scss files.
+
 	.pipe( sourcemaps.init() )
+
 	.pipe( sass( { // 
 		errLogToConsole: true,
+		outputStyle: 'compressed',
 		precision: 10 // Used to determine how many digits after the decimal will be allowed. 
 	} ) )
 	.on('error', console.error.bind(console))
-	.pipe( sourcemaps.write( { includeContent: false } ) ) // Set includeContent: true to add the source code to the maps.
-	.pipe( sourcemaps.init( { loadMaps: true } ) ) // Set loadMaps: true to load existing source maps
+
 	.pipe( autoprefixer( config.styles_browsers ) ) // Adds vendor prefixes to support browsers listed in config.
-	.pipe( sourcemaps.write ( './' ) )
+
+	.pipe( sourcemaps.write( { includeContent: false } ) ) // Set includeContent: true to add the source code to the maps.
+	.pipe( sourcemaps.init( { loadMaps: true } ) )
+	.pipe( sourcemaps.write( './' ) ) // Set includeContent: true to add the source code to the maps.
 	.pipe( gulp.dest( config.styles_dest ) )
+
 	.pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
-	.pipe( mmq( { log: true } ) ) // Merge Media Queries only for .min.css version.
 	.pipe( browserSync.stream() ) // Reloads style.css if that is enqueued.
-	.pipe( gulpif( config.styles_minify, minifycss( { // If config set to true, minify CSS.
-	  maxLineLen: 0 // Adds a newline every x characters.
-	})))
+
 	.pipe( gulp.dest( config.styles_dest ) )
+
 	.pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
 	.pipe( browserSync.stream() ) // Reloads style.min.css if that is enqueued.
+
 	.pipe( notify( { message: 'TASK: "styles" Completed! 💯', onLast: true } ) ) // Notifies completion of task 
  });
 
@@ -202,6 +203,8 @@ gulp.task( 'combinedJS', ['jshint'], function () {
 			}
 		}))
 		.pipe(gulp.dest( config.scripts_dest )) // Output files.
+		.pipe( notify( { message: 'TASK: "combinedJS" Completed! 💯', onLast: true } ) ) // Notifies completion of task 
+
 });
 
 

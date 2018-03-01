@@ -8,7 +8,7 @@
 	// Style settings
 	"styles_src" : "./assets/scss/style.scss",  // Path to main .scss file
 	"styles_dest" : "./assets/css/", // Path to place the compiled CSS file.
-	"styles_minify" : "compressed", // Minify output mode, Options: compact, compressed, nested, expanded
+	"styles_minify" : true, // Options: true, false
 
 	// Script Vendor settings
 	"scripts_vendor_src": "./assets/js/vendor/*.js", // Path to JS vendor scripts folder.
@@ -42,7 +42,7 @@
 
 	// User settings
 	"use_linting" : true, // Set to use JS linting: true / false.
-	"use_browsersync" : true, // Set to open browser window to proxy server: true / false
+	"use_browsersync" : false, // Set to open browser window to proxy server: true / false
 	"proxy_port" : "",
 	"use_injectcss" : true // Set to inject CSS for Browsersync: true / false
 }

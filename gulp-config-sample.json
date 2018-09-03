@@ -6,8 +6,9 @@
 	"project_type" : "theme", // Options: theme, plugin
 	
 	// Style settings
-	"styles_src" : "./assets/scss/style.scss",  // Path to main .scss file
+	"styles_src" : "./assets/scss/style.scss",  // Path to main .scss file.
 	"styles_dest" : "./assets/css/", // Path to place the compiled CSS file.
+	"styles_combined_name" : "style", // Default set to "style" i.e. style.css.
 	"styles_minify" : true, // Options: true, false
 
 	// Script Vendor settings
@@ -18,7 +19,7 @@
 
 	// Other script settings
 	"scripts_dest": "./assets/js/",
-	"scripts_combined_name" : "footer-scripts", // Default set to "main" i.e. main.js.
+	"scripts_combined_name" : "footer-scripts", // Default set to "footer-scripts" i.e. footer-scripts.js.
 
 	// Watch paths
 	"watch_styles": "./assets/scss/**/*.scss",
@@ -42,6 +43,8 @@
 
 	// User settings
 	"use_linting" : true, // Set to use JS linting: true / false.
+	"use_autoprefixer" : false, // Set to use Autoprefixer for Sass: true / false.
+	"js_linting_fail_on_error" : false, // Set to true to halt tasks when JS linting reports an error. Requires 'use_linting' to be set to true.
 	"use_browsersync" : true, // Set to open browser window to proxy server: true / false
 	"proxy_port" : "",
 	"use_injectcss" : true // Set to inject CSS for Browsersync: true / false

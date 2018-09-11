@@ -30,6 +30,8 @@ var gulp         = require('gulp'); // Gulp of-course
 var sass         = require('gulp-sass'); // Gulp pluign for Sass compilation.
 var minifycss    = require('gulp-uglifycss'); // Minifies CSS files.
 var autoprefixer = require('gulp-autoprefixer'); // Autoprefixing magic.
+var bulkSass     = require('gulp-sass-bulk-import'); //https://www.npmjs.com/package/gulp-sass-bulk-import
+var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css)
 
 // JS related plugins.
 var concat       = require('gulp-concat'); // Concatenates JS files
@@ -38,8 +40,6 @@ var minifyjs     = require('gulp-minify'); //https://www.npmjs.com/package/gulp-
 
 // Utility related plugins.
 var filter       = require('gulp-filter'); // Enables you to work on a subset of the original files by filtering them using globbing.
-var bulkSass     = require('gulp-sass-bulk-import'); //https://www.npmjs.com/package/gulp-sass-bulk-import
-var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css)
 var streamqueue  = require('streamqueue'); //https://github.com/contra/gulp-concat
 var notify       = require('gulp-notify'); // Sends message notification to you
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
@@ -49,7 +49,7 @@ var watch        = require('gulp-watch'); // Using gulp-watch as an alternative 
 var JSONC        = require('json-comments'); // Parse JSON and strip out comments.  Allows non-standard JSON to be used for gulp-config.json.
 var fs           = require('fs'); // Uses Node filesystem package.
 var gulpif       = require('gulp-if'); // Adds conditional logic to control flow.
-
+var rename       = require('gulp-rename'); // Adds conditional logic to control flow.
 
 /**
  * Load config file.
@@ -64,14 +64,17 @@ var config = [];
 try {
 	// read in gulp config file.
 	configContent = fs.readFileSync( configFile, 'utf8' );
-	
+
 	// parse JSON String.
 	var config = JSONC.parse( configContent ); 
+	
 
 } catch (exp) {
 
 	// Error if no config file is found.
-	throw new Error("Please create the config file 'gulp-config.json'.");
+	throw new Error("Please check the config file 'gulp-config.json' exists and has no errors.");
+	
+	// console.log( config );  // Output contents of config.
 }
 
 
@@ -84,7 +87,7 @@ try {
  *    1. Sets the project URL
  *    2. Sets inject CSS
  *    3. You may define a custom port
- *    4. You may want to stop the browser from openning automatically
+ *    4. You may want to stop the browser from opening automatically
  */
 gulp.task( 'browser-sync', function() {
 	browserSync.init( {
@@ -109,30 +112,6 @@ gulp.task( 'browser-sync', function() {
 	});
 });
 
-gulp.task( 'browser-sync-open', function() {
-	browserSync.init( {
-
-		// For more options
-		// @link http://www.browsersync.io/docs/options/
-
-		// Project URL.
-		proxy: config.project_url,
-
-		// `true` Automatically open the browser with BrowserSync live server.
-		// `false` Stop the browser from automatically opening.
-		open: true,
-
-		// Inject CSS changes.
-		// Comment it to reload browser for every CSS change.
-		injectChanges: config.use_injectcss,
-
-		// Use a specific port (instead of the one auto-detected by Browsersync).
-		// port: 7000,
-
-	});
-});
-
-
 /**
  * Task: `styles`.
  *
@@ -149,6 +128,8 @@ gulp.task('styles', function () {
 	gulp.src( config.styles_src )
 	.pipe( bulkSass() ) // Import directories within .scss files.
 
+	.pipe( rename( config.styles_combined_name + '.css' ) )
+
 	.pipe( sourcemaps.init() )
 
 	.pipe( sass( { // 
@@ -158,20 +139,19 @@ gulp.task('styles', function () {
 	} ) )
 	.on('error', console.error.bind(console))
 
-	.pipe( autoprefixer( config.styles_browsers ) ) // Adds vendor prefixes to support browsers listed in config.
+	// Using gulp-autoprefixer breaks sourcemapping!
+	.pipe( gulpif( config.use_autoprefixer, autoprefixer( { browsers: config.styles_browsers_supported } ) ) ) // Adds vendor prefixes to support browsers listed in config.
+	.pipe( sourcemaps.write( './', {
+		mapFile: function(mapFilePath){
+			// source map files are named *.map instead of *.js.map
+			return config.styles_combined_name + '.css.map';
+		}
+	} ) ) // Set includeContent: true to add the source code to the maps.
 
-	.pipe( sourcemaps.write( { includeContent: false } ) ) // Set includeContent: true to add the source code to the maps.
-	.pipe( sourcemaps.init( { loadMaps: true } ) )
-	.pipe( sourcemaps.write( './' ) ) // Set includeContent: true to add the source code to the maps.
-	.pipe( gulp.dest( config.styles_dest ) )
+	.pipe( gulp.dest( config.styles_dest ) ) // Output sourcemap to file.
 
 	.pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
 	.pipe( browserSync.stream() ) // Reloads style.css if that is enqueued.
-
-	.pipe( gulp.dest( config.styles_dest ) )
-
-	.pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
-	.pipe( browserSync.stream() ) // Reloads style.min.css if that is enqueued.
 
 	.pipe( notify( { message: 'TASK: "styles" Completed! 💯', onLast: true } ) ) // Notifies completion of task 
  });
@@ -222,9 +202,9 @@ gulp.task('jshint', function () {
 			gulp.src( config.scripts_custom_src ) // Custom-only, ignore linting vendor scripts.
 
 		)
-			.pipe(jshint())
-			.pipe(jshint.reporter( 'jshint-stylish' )) // Adds a reporter function to style jshint output.
-			.pipe(jshint.reporter( 'fail' )) // Adds reporter function to fail the build on error.
+			.pipe( jshint() )
+			.pipe( jshint.reporter( 'jshint-stylish' ) ) // Adds a reporter function to style jshint output.
+			.pipe( gulpif( config.js_linting_fail_on_error, jshint.reporter( 'fail' ) ) ) // Adds reporter function to fail the build on error.	
 	}
 
 });
@@ -241,11 +221,12 @@ gulp.task( 'default', ['styles', 'combinedJS', 'browser-sync'], function () {
 		gulp.start('styles'); // Reload on SCSS file changes.
 	});
 
-	// Use gulp's watcher
-	gulp.watch( config.watch_js_vendor, [ 'combinedJS', reload ] ); // Reload on vendorsJs file changes.
-	
 	// Use gulp-watch watcher.
 	watch( config.watch_js_custom, function() {
 		gulp.start('combinedJS');
 	});		
+
+	// Use gulp's watcher
+	gulp.watch( config.watch_js_vendor, [ 'combinedJS', reload ] ); // Reload on vendorsJs file changes.
+	
 });

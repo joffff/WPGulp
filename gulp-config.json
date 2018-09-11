@@ -27,7 +27,7 @@
 	"watch_js_custom": "./assets/js/modules/*.js",
 
 	// Browser support
-	"styles_browsers" : [ // Array of browsers for autoprefixer. See https://github.com/ai/browserslist
+	"styles_browsers_supported" : [ // Array of browsers for autoprefixer. See https://github.com/ai/browserslist
 		"last 2 version",
 		"> 1%",
 		"ios >= 8"
@@ -45,7 +45,7 @@
 	// User settings
 	"use_linting" : true, // Set to use JS linting: true / false.
 	"use_browsersync" : true, // Set to open browser window to proxy server: true / false
-	"use_autoprefixer" : false, // Set to use Autoprefixer for Sass: true / false.
+	"use_autoprefixer" : true, // Set to use Autoprefixer for Sass: true / false.
 	"js_linting_fail_on_error" : false, // Set to true to halt tasks when JS linting reports an error. Requires 'use_linting' to be set to true.
 	"proxy_port" : "",
 	"use_injectcss" : true // Set to inject CSS for Browsersync: true / false

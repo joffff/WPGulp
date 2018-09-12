@@ -12,7 +12,7 @@
  *   4. Watches files for changes in CSS or JS.  Watches for new files in CSS or JS.
  *   5. InjectCSS instead of browser page reload.
  *      
- * Inspired by:
+ * Inspired by / credit to:
  *   Gulp with WordPress: https://github.com/ahmadawais/WPGulp
  *   Gulp WP Toolkit: https://github.com/craigsimps/gulp-wp-toolkit
  *

@@ -44,7 +44,7 @@
 
 	// User settings
 	"use_linting" : true, // Set to use JS linting: true / false.
-	"use_browsersync" : true, // Set to open browser window to proxy server: true / false
+	"use_browsersync" : "external", // Set to open browser window to proxy server: true / false / local / external
 	"use_autoprefixer" : true, // Set to use Autoprefixer for Sass: true / false.
 	"js_linting_fail_on_error" : false, // Set to true to halt tasks when JS linting reports an error. Requires 'use_linting' to be set to true.
 	"proxy_port" : "",

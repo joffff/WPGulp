@@ -95,11 +95,16 @@ gulp.task( 'browser-sync', function() {
 		// For more options
 		// @link http://www.browsersync.io/docs/options/
 
-		// Project URL.
+		// URL to proxy.
 		proxy: config.project_url,
+
+		// Sets the project URL.
+		host: config.project_url,
 
 		// `true` Automatically open the browser with BrowserSync live server.
 		// `false` Stop the browser from automatically opening.
+		// `local` to open
+		// `external` to open the external URL - must be online.
 		open: config.use_browsersync,
 
 		// Inject CSS changes.
